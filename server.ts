@@ -7,7 +7,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     req.query[param] = (req.query[param] as string)
       .normalize()
       .toLowerCase()
-      .replace(/[^a-zA-Z0-9 ]/g, "");
+      .replace(/[^\x00-\x7F]/g, "");
   }
   next();
 });
