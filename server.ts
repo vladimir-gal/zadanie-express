@@ -1,24 +1,31 @@
-import express, { Express, NextFunction, Request, Response } from "express";
+import express from "express";
 
-const app: Express = express();
+const app = express();
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  for (let param in req.query) {
-    req.query[param] = (req.query[param] as string)
+app.use((req, res, next) => {
+  Object.entries(req.query).forEach(([key, value]) => {
+    req.query[key] = String(value)
       .normalize()
       .toLowerCase()
       .replace(/[^\x00-\x7F]/g, "");
-  }
+  });
   next();
 });
 
-app.get("/user/:id", (req: Request, res: Response) => {
-  let id: String = req.params.id;
-  let name: String = req.query.name as string;
-  let age: number = Number((req.query.age as string).replace(/[^0-9]/g, ""));
+app.get("/user/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, age } = req.query;
 
-  let str: String = `id: ${id}, name: ${name}, age: ${age}`;
-  res.send(str);
+  if(typeof name !== "string" || typeof age !== "string") {
+    res.status(400).send("Invalid query parameters");
+    return;
+  }
+
+  res.send({
+    id,
+    name,
+    age: Number(age?.replace(/[^0-9]/g, ""))
+  });
 });
 
 app.listen(3000, () => {
